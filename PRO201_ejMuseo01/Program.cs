@@ -60,47 +60,238 @@ namespace PRO201_ejMuseo01
             List<Galeria> listadoGalerias = new List<Galeria>();
             listadoGalerias.Add(galeria);
 
-            //VALIDAR QIE EXISTE USUARIO
-            //SI EXISTE: MOSTRAR EL MENU SEGUN TIPO DE USUARIO
-            int opcionA =MenuAdministrador();
-            int opcionG =MenuGuia();
+            //Agregar un boleano para validar respuesta
+            bool continuar = true;
 
-            Console.WriteLine(opcionA);
-            Console.WriteLine(opcionG);
+            //while por defecto viene en verdadero 
+            while (continuar)
+            {
+                string tipoUser = LoginUser(listadoAdministrador, listadoGuias);
+                if (tipoUser == "admin")
+                {
+                    int opcion;
+                    do
+                    {
+                        opcion = MenuAdministrador();
+                        switch (opcion)
+                        {
+                            case 1:
+                                VerGuia(listadoGuias);
+                                break;
+                            case 2:
+                                VerObra(listadoObras);
+                                break;
+                            case 3:
+                                VerExpocision(listadoExposicion);
+                                break;
+                            case 4:
+                                VerGaleria(listadoGalerias);
+                                break;
+                            case 5:
+                                Console.WriteLine("------AGREGAR GALERIA ----------");
+                                //Solicitar datos
+                                Console.WriteLine("Ingrese Id:");
+                                int id = int.Parse(Console.ReadLine());
+                                Console.WriteLine("Ingrese Nombre:");
+                                string nombre = Console.ReadLine();
+                                Console.WriteLine("Seleccione Exposicion para Agregar");
+                                VerExpocision(listadoExposicion);
+                                Console.WriteLine("Ingrese Id de Exposicion ");
+                                int idExpo = int.Parse(Console.ReadLine());
+                                List<Exposicion> listaAgregar = new List<Exposicion>();
+                                foreach (Exposicion itemExpo in listadoExposicion)
+                                {
+                                    if (itemExpo.Id == idExpo)
+                                    {
+                                        listaAgregar.Add(itemExpo);
+                                    }
+                                }
+                                Galeria gal = new Galeria(id, nombre, listaAgregar);
+                                listadoGalerias.Add(gal);
+                                Console.WriteLine("Galeria Agregada Correctamente");
+                                break;
+                            case 6:
+                                Console.WriteLine("----EDITAR GALERIA -----");
+                                foreach (var gale in listadoGalerias)
+                                {
+                                    Console.WriteLine($"ID: {gale.Id} | Nombre: {gale.Nombre}");
+                                }
+                                Console.WriteLine("Seleccione Galeria");
+                                int galeria_seleccionada = int.Parse(Console.ReadLine());
+                                foreach (var gale in listadoGalerias)
+                                {
+                                    if (gale.Id == galeria_seleccionada)
+                                    {
+                                        Console.WriteLine("EXPOSICIONES ACTUALES EN LA GALERIA");
+                                        foreach (var expo in gale.ListadoExposiciones)
+                                        {
+                                            Console.WriteLine($"Id: {expo.Id} | Nombre: {expo.Nombre}");
+                                        }
+                                        Console.WriteLine("Motrar todas las exposiciones");
+                                        foreach (var expo in listadoExposicion)
+                                        {
+                                            Console.WriteLine($"Id: {expo.Id} | Nombre: {expo.Nombre}");
+                                        }
+                                        Console.WriteLine("Selecciona exposicion a agregar");
+                                        int expo_IdSeleccionada = int.Parse(Console.ReadLine());
+                                        Exposicion expoBuscada = BuscarExposicion(expo_IdSeleccionada, listadoExposicion);
+                                        if (expoBuscada != null)
+                                        {
+                                            bool existeExpo = false;
+                                            foreach (var expo in gale.ListadoExposiciones)
+                                            {
+                                                if (expo.Id == expoBuscada.Id)
+                                                {
+                                                    Console.WriteLine("Ya existe la exposicion");
+                                                    existeExpo = true;
+                                                    break;
+                                                }
+                                            }
+                                            if (!existeExpo)
+                                            {
+                                                gale.ListadoExposiciones.Add(expoBuscada);
+                                                Console.WriteLine("Exposicion Agregada");
+                                            }
+                                        }
+                                    }
+                                }
+                                break;
+                            case 0:
+                                continuar = false;
+                                break;
+                            default:
+                                Console.WriteLine("Opción Inválida");
+                                break;
+                        }
+                    } while (opcion != 0);
+                }
+                else if (tipoUser == "guia")
+                {
+                    int opcion;
+                    do
+                    {
+                        opcion = MenuGuia();
+                        switch (opcion)
+                        {
+                            case 1:
+                                VerGaleria(listadoGalerias);
+                                break;
+                            case 0:
+                                continuar = false;
+                                break;
+                            default:
+                                Console.WriteLine("Opción Inválida");
+                                break;
+                        }
+                    } while (opcion != 0);
+                }
+                else
+                {
+                    Console.WriteLine("No Existe");
+                    continuar = false;
+                }
+            }
+            Console.WriteLine("Programa finalizado.");
             Console.ReadLine();
-
         }
+        static String LoginUser(List<Administrador> listadmin, List<Guia> listguia)
+        {
+            Console.WriteLine("Ingrese Usuario");
+            String User = Console.ReadLine();
+            Console.WriteLine("Ingrese Contraseña");
+            String Pass = Console.ReadLine();
+            foreach (Administrador admin in listadmin)
+            {
+                if (admin.Usuario == User && admin.Password == Pass)
+                {
+                    return "admin";
+                }
 
-        //MENU PARA ADMINISTRADOR 
+            }
+            foreach (Guia guia in listguia)
+            {
+                if (guia.Usuario == User && guia.Password == Pass)
+                {
+                    return "guia";
+                }
+
+            }
+            return "Invalido";
+        }
+        //Ver Exposicion
+        static void VerExpocision(List<Exposicion> ListaExposicion)
+        {
+            foreach (var item in ListaExposicion)
+            {
+
+                Console.WriteLine($"-------------{item.Nombre}--------ID: {item.Id}---------");
+                VerObra(item.ListadoObras);
+            }
+        }
+        //Ver Guia
+        static void VerGuia(List<Guia> listadoGuia)
+        {
+            foreach (var guia in listadoGuia)
+            {
+                Console.WriteLine($"Id: {guia.Id} Nombre: {guia.Nombre} {guia.Apellido}");
+                Console.WriteLine($"Usuario: {guia.Usuario}");
+            }
+        }
+        //Ver Obra de Arte
+        static void VerObra(List<ObraArte> listadoObraArte)
+        {
+            foreach (var obra in listadoObraArte)
+            {
+                Console.WriteLine($"Id: {obra.Id} Nombre: {obra.Nombre}");
+                Console.WriteLine($"Autor: {obra.Autor} Fecha: {obra.Fecha}");
+                Console.WriteLine($"Descripción: {obra.Descripcion}");
+            }
+        }
+        static void VerGaleria(List<Galeria> listaGaleria)
+        {
+            foreach (var item in listaGaleria)
+            {
+                Console.WriteLine($"Id: {item.Id} Nombre: {item.Nombre}");
+                VerExpocision(item.ListadoExposiciones);
+            }
+        }
         static int MenuAdministrador()
         {
-            Console.WriteLine("--Menu Administrador--");
-            Console.WriteLine("[1] Ver listado de Guias");
+            Console.WriteLine("-- Menú Administrador --:");
+            Console.WriteLine("[1] Ver listado de Guías");
             Console.WriteLine("[2] Ver listado de Obras de arte");
             Console.WriteLine("[3] Ver listado de Exposiciones");
-            Console.WriteLine("[4] Ver listado de Galerias");
-            Console.WriteLine("[5] Agregar Galeria");
-            Console.WriteLine("[6] Editar Galeria (Agregar exposicion)");
+            Console.WriteLine("[4] Ver listado de Galerías");
+            Console.WriteLine("[5] Agregar Galería");
+            Console.WriteLine("[6] Editar Galería (Agregar exposición, verificar primero que no existe ya en la galería actual)");
             Console.WriteLine("[0] Salir");
-            Console.WriteLine("Seleccione una opcion");
-            int opcion = int.Parse(Console.ReadLine());//falta validar el int
-            Console.ReadLine();
-            return opcion;    
+            Console.WriteLine("Selecciona una opción: ");
+            int opcion = int.Parse(Console.ReadLine());
+            return opcion;
         }
-
-        //MENU PARA GUIA
-        static int MenuGuia() 
+        static int MenuGuia()
         {
-            Console.WriteLine("--Menu Guia--");
-            Console.WriteLine("[1] Ver listado de Galerias");
-            Console.WriteLine("[2] Salir");
-            Console.WriteLine("Seleccione una opcion");
-            int opcion = int.Parse(Console.ReadLine());//falta validar el int
-            Console.ReadLine();
+            Console.WriteLine("[1] Ver listado de Galerías");
+            Console.WriteLine("[0] Salir");
+            int opcion = int.Parse(Console.ReadLine());
             return opcion;
         }
 
-        
-
+        static Exposicion BuscarExposicion(int idBuscar, List<Exposicion> listadoExposiciones)
+        {
+            foreach (var expo in listadoExposiciones)
+            {
+                if (expo.Id == idBuscar)
+                {
+                    return expo;
+                }
+            }
+            return null;
+        }
     }
 }
+
+        
+
+    
+
